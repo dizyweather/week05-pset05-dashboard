@@ -10,9 +10,9 @@
   --sage-dark: #375847;
   --sage-wash: #e6eee5;
   --line: #d7d6c9;
-  --globe-ocean: #ccd5c5;
-  --globe-land: #e4e8d9;
-  --globe-line: #869d8a;
+  --globe-cream: #e7d9c2;
+  --globe-line: #344239;
+  --globe-crack: #694533;
   --terracotta: #b73d32;
   --terracotta-dark: #8e2d26;
   --terracotta-wash: #f9e9e4;
@@ -96,6 +96,49 @@ select {
   padding: 1rem;
 }
 
+.quake-error-panel {
+  display: flex;
+  align-items: center;
+  gap: 1.5rem;
+  border-color: #d7c4ac;
+  background: #f3e9da;
+}
+
+.quake-error-title {
+  color: var(--ink);
+  font-family: Georgia, "Times New Roman", serif;
+  font-size: 1.5rem;
+}
+
+.cracked-globe {
+  display: block;
+  flex: 0 0 190px;
+  width: 190px;
+}
+
+.globe-crack-edge,
+.globe-crack-gap,
+.globe-crack-branch {
+  fill: none;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.globe-crack-edge {
+  stroke: var(--globe-crack);
+  stroke-width: 17px;
+}
+
+.globe-crack-gap {
+  stroke: var(--card);
+  stroke-width: 6px;
+}
+
+.globe-crack-branch {
+  stroke: var(--globe-crack);
+  stroke-width: 5px;
+}
+
 .action-button,
 .secondary-button {
   border-radius: 8px;
@@ -168,12 +211,12 @@ select {
 }
 
 .globe-ocean {
-  fill: var(--globe-ocean);
+  fill: var(--globe-cream);
   stroke: var(--globe-line);
 }
 
 .globe-land {
-  fill: var(--globe-land);
+  fill: var(--globe-cream);
   stroke: var(--globe-line);
 }
 
@@ -195,5 +238,10 @@ select {
 @media (max-width: 640px) {
   .dashboard-card {
     padding: 1.2rem;
+  }
+
+  .quake-error-panel {
+    flex-direction: column;
+    text-align: center;
   }
 }

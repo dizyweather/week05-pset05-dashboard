@@ -30,6 +30,33 @@ interface DragStart {
 
 const topology = landTopology as unknown as Parameters<typeof feature>[0];
 const land = feature(topology, topology.objects.land);
+const errorLandPath = geoPath(geoOrthographic()
+  .scale(GLOBE_RADIUS)
+  .translate([GLOBE_SIZE / 2, GLOBE_SIZE / 2])
+  .rotate([-15, -10])
+  .clipAngle(90))(land);
+
+function CrackedGlobe() {
+  const crack = "M 208 20 L 191 70 L 222 112 L 190 155 L 213 198 L 187 239 L 219 279 L 192 322 L 211 363 L 201 400";
+
+  return (
+    <svg viewBox={`0 0 ${GLOBE_SIZE} ${GLOBE_SIZE}`} className="cracked-globe"
+      aria-hidden="true" focusable="false">
+      <defs>
+        <clipPath id="cracked-globe-clip">
+          <circle cx={GLOBE_SIZE / 2} cy={GLOBE_SIZE / 2} r={GLOBE_RADIUS} />
+        </clipPath>
+      </defs>
+      <circle className="globe-ocean" cx={210} cy={210} r={GLOBE_RADIUS} strokeWidth="2" />
+      {errorLandPath && <path className="globe-land" d={errorLandPath} strokeWidth="1.2" />}
+      <g clipPath="url(#cracked-globe-clip)">
+        <path className="globe-crack-edge" d={crack} />
+        <path className="globe-crack-gap" d={crack} />
+        <path className="globe-crack-branch" d="M 190 155 L 161 142 L 145 116 M 187 239 L 154 254 L 137 285 M 219 279 L 247 265 L 270 239" />
+      </g>
+    </svg>
+  );
+}
 
 function validNumber(value: unknown): number | null {
   return typeof value === "number" && Number.isFinite(value) ? value : null;
@@ -207,12 +234,16 @@ export function EarthquakeCard() {
       )}
 
       {status === "error" && (
-        <div className="error-panel mt-4" role="alert">
-          <p>Couldn&apos;t load earthquakes from USGS.</p>
-          <button type="button" onClick={retry}
-            className="action-button mt-3">
-            Try again
-          </button>
+        <div className="error-panel quake-error-panel mt-4" role="alert">
+          <CrackedGlobe />
+          <div>
+            <p className="quake-error-title">Earthquake data unavailable</p>
+            <p className="mt-1">Couldn&apos;t load earthquakes from USGS.</p>
+            <button type="button" onClick={retry}
+              className="action-button mt-3">
+              Try again
+            </button>
+          </div>
         </div>
       )}
 
@@ -234,7 +265,7 @@ export function EarthquakeCard() {
                 </clipPath>
               </defs>
               <circle className="globe-ocean" cx={210} cy={210} r={GLOBE_RADIUS} strokeWidth="2" />
-              {landPath && <path className="globe-land" d={landPath} strokeWidth="0.8" />}
+              {landPath && <path className="globe-land" d={landPath} strokeWidth="1.2" />}
               <g clipPath="url(#earthquake-globe-clip)">
                 {visibleEvents.map(({ event, x, y }) => (
                   <circle key={event.id} data-earthquake-marker="true" className="quake-marker" cx={x} cy={y}
