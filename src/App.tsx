@@ -120,51 +120,52 @@ function WeatherCard() {
   }, []);
 
   return (
-    <section className="rounded-lg border border-gray-200 p-5">
-      <h2 className="text-xl font-semibold">Do I need a coat?</h2>
+    <section className="dashboard-card" aria-labelledby="weather-title">
+      <p className="eyebrow">Local weather · Boulder, Colorado</p>
+      <h2 id="weather-title" className="card-title mt-2">Do I need a coat?</h2>
 
       {status === "loading" && (
-        <p className="mt-3 text-gray-600" aria-live="polite">
+        <p className="supporting-text mt-4" aria-live="polite">
           Loading weather…
         </p>
       )}
 
       {status === "loaded" && weather && (
-        <div className="mt-3">
+        <div className="mt-5">
           {source === "sample" && (
-            <p className="mb-2 inline-block rounded bg-amber-100 px-2 py-1 text-xs font-semibold text-amber-900">
+            <p className="sample-badge mb-3">
               Sample data — not live
             </p>
           )}
-          <p className="text-4xl font-bold">
+          <p className="weather-value">
             {weather.temperatureF === null ? "--°F" : `${Math.round(weather.temperatureF)}°F`}
           </p>
-          <p className="text-gray-700">
+          <p className="mt-1">
             {weather.weatherCode === null
               ? "Condition unavailable"
               : WEATHER_LABELS[weather.weatherCode] ?? `Weather code ${weather.weatherCode}`}
           </p>
-          <p className="mt-1 text-sm text-gray-500">
+          <p className="supporting-text mt-2 text-sm">
             {weather.observedAt ? `Observed ${weather.observedAt}` : "Observation time unavailable"}
           </p>
         </div>
       )}
 
       {status === "error" && (
-        <div className="mt-3 rounded bg-red-50 p-3 text-sm text-red-900">
+        <div className="error-panel mt-4 text-sm" role="alert">
           <p>Couldn&apos;t reach the weather service.</p>
-          <div className="mt-2 flex gap-2">
+          <div className="mt-3 flex flex-wrap gap-2">
             <button
               type="button"
               onClick={retry}
-              className="rounded bg-red-700 px-3 py-1 font-medium text-white hover:bg-red-800"
+              className="action-button"
             >
               Try again
             </button>
             <button
               type="button"
               onClick={useSample}
-              className="rounded border border-red-700 px-3 py-1 font-medium text-red-800 hover:bg-red-100"
+              className="secondary-button"
             >
               Show sample data
             </button>
@@ -177,11 +178,12 @@ function WeatherCard() {
 
 export function App() {
   return (
-    <main className="mx-auto flex max-w-4xl flex-col gap-6 p-8">
-      <header>
-        <h1 className="text-3xl font-bold">My Dashboard</h1>
-        <p className="text-gray-700">
-          A quick look at the weather and earthquakes around the world.
+    <main className="mx-auto flex max-w-4xl flex-col gap-6 px-5 py-8 sm:p-8">
+      <header className="dashboard-header">
+        <p className="eyebrow mb-2">A daily briefing</p>
+        <h1 className="page-title">Morning Field Notes</h1>
+        <p className="supporting-text mt-2">
+          Your weather in Boulder and earthquakes around the world.
         </p>
       </header>
 

@@ -193,28 +193,31 @@ export function EarthquakeCard() {
   };
 
   return (
-    <section className="rounded-lg border border-gray-200 p-5 sm:col-span-2" aria-labelledby="earthquake-title">
-      <div className="flex flex-wrap items-baseline justify-between gap-2">
-        <h2 id="earthquake-title" className="text-xl font-semibold">Where are earthquakes happening?</h2>
-        <span className="text-sm text-gray-600">Past 24 hours · USGS</span>
+    <section className="dashboard-card sm:col-span-2" aria-labelledby="earthquake-title">
+      <div className="flex flex-wrap items-end justify-between gap-2">
+        <div>
+          <p className="eyebrow">Global activity</p>
+          <h2 id="earthquake-title" className="card-title mt-2">Where are earthquakes happening?</h2>
+        </div>
+        <span className="supporting-text text-sm">Past 24 hours · USGS</span>
       </div>
 
       {status === "loading" && (
-        <p className="mt-4 text-gray-600" role="status">Loading earthquakes…</p>
+        <p className="supporting-text mt-4" role="status">Loading earthquakes…</p>
       )}
 
       {status === "error" && (
-        <div className="mt-4 rounded bg-red-50 p-4 text-red-900" role="alert">
+        <div className="error-panel mt-4" role="alert">
           <p>Couldn&apos;t load earthquakes from USGS.</p>
           <button type="button" onClick={retry}
-            className="mt-3 rounded bg-red-700 px-3 py-1 font-medium text-white hover:bg-red-800">
+            className="action-button mt-3">
             Try again
           </button>
         </div>
       )}
 
       {status === "loaded" && earthquakes.length === 0 && (
-        <p className="mt-4 text-gray-600" role="status">No earthquakes found in the past 24 hours.</p>
+        <p className="supporting-text mt-4" role="status">No earthquakes found in the past 24 hours.</p>
       )}
 
       {status === "loaded" && earthquakes.length > 0 && (
@@ -230,33 +233,32 @@ export function EarthquakeCard() {
                   <circle cx={210} cy={210} r={GLOBE_RADIUS} />
                 </clipPath>
               </defs>
-              <circle cx={210} cy={210} r={GLOBE_RADIUS} fill="#dbeafe" stroke="#93c5fd" strokeWidth="2" />
-              {landPath && <path d={landPath} fill="#d1d5db" stroke="#9ca3af" strokeWidth="0.8" />}
+              <circle className="globe-ocean" cx={210} cy={210} r={GLOBE_RADIUS} strokeWidth="2" />
+              {landPath && <path className="globe-land" d={landPath} strokeWidth="0.8" />}
               <g clipPath="url(#earthquake-globe-clip)">
                 {visibleEvents.map(({ event, x, y }) => (
-                <circle key={event.id} data-earthquake-marker="true" cx={x} cy={y}
-                  r={markerRadius(event.magnitude)} fill="#dc2626" stroke="#fff"
-                  strokeWidth={selectedId === event.id ? 3 : 1.5}
-                  role="button" tabIndex={0}
-                  aria-label={`${formatMagnitude(event.magnitude)}, ${event.place}, ${formatTime(event.time)}`}
-                  aria-pressed={selectedId === event.id}
-                  onClick={() => selectEvent(event)}
-                  onKeyDown={(keyEvent) => {
-                    if (keyEvent.key === "Enter" || keyEvent.key === " ") {
-                      keyEvent.preventDefault();
-                      selectEvent(event);
-                    }
-                  }}>
-                  <title>{`${formatMagnitude(event.magnitude)} · ${event.place}`}</title>
-                </circle>
+                  <circle key={event.id} data-earthquake-marker="true" className="quake-marker" cx={x} cy={y}
+                    r={markerRadius(event.magnitude)} strokeWidth={selectedId === event.id ? 3 : 1.5}
+                    role="button" tabIndex={0}
+                    aria-label={`${formatMagnitude(event.magnitude)}, ${event.place}, ${formatTime(event.time)}`}
+                    aria-pressed={selectedId === event.id}
+                    onClick={() => selectEvent(event)}
+                    onKeyDown={(keyEvent) => {
+                      if (keyEvent.key === "Enter" || keyEvent.key === " ") {
+                        keyEvent.preventDefault();
+                        selectEvent(event);
+                      }
+                    }}>
+                    <title>{`${formatMagnitude(event.magnitude)} · ${event.place}`}</title>
+                  </circle>
                 ))}
               </g>
             </svg>
-            <p className="mt-1 text-center text-sm text-gray-600">Drag to rotate · Select a red point for details</p>
+            <p className="supporting-text mt-1 text-center text-sm">Drag to rotate · Select a red point for details</p>
           </div>
 
           <div className="min-w-0">
-            <label htmlFor="earthquake-select" className="block text-sm font-medium text-gray-700">
+            <label htmlFor="earthquake-select" className="block text-sm font-semibold">
               Choose an earthquake ({earthquakes.length} total)
             </label>
             <select id="earthquake-select" value={selectedId ?? ""}
@@ -264,7 +266,7 @@ export function EarthquakeCard() {
                 const event = earthquakes.find((item) => item.id === changeEvent.target.value);
                 if (event) selectEvent(event);
               }}
-              className="mt-1 w-full rounded border border-gray-300 bg-white p-2 text-sm">
+              className="field-select mt-2 text-sm">
               {earthquakes.map((event) => (
                 <option key={event.id} value={event.id}>
                   {formatMagnitude(event.magnitude)} · {event.place}
@@ -273,17 +275,17 @@ export function EarthquakeCard() {
             </select>
 
             {selected && (
-              <div className="mt-4 rounded-lg bg-gray-50 p-4" aria-live="polite">
-                <p className="text-2xl font-bold text-red-700">{formatMagnitude(selected.magnitude)}</p>
+              <div className="event-detail mt-4" aria-live="polite">
+                <p className="event-magnitude">{formatMagnitude(selected.magnitude)}</p>
                 <p className="mt-1 font-medium">{selected.place}</p>
                 <dl className="mt-3 grid grid-cols-[auto_1fr] gap-x-3 gap-y-2 text-sm">
-                  <dt className="text-gray-600">Time</dt><dd>{formatTime(selected.time)}</dd>
-                  <dt className="text-gray-600">Depth</dt>
+                  <dt className="supporting-text">Time</dt><dd>{formatTime(selected.time)}</dd>
+                  <dt className="supporting-text">Depth</dt>
                   <dd>{selected.depthKm === null ? "Depth unavailable" : `${selected.depthKm.toFixed(1)} km`}</dd>
                 </dl>
                 {selected.url && (
                   <a href={selected.url} target="_blank" rel="noopener noreferrer"
-                    className="mt-3 inline-block font-medium text-blue-700 underline hover:text-blue-900">
+                    className="text-link mt-3 inline-block font-medium">
                     View event on USGS
                   </a>
                 )}
