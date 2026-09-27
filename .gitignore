@@ -1,0 +1,7 @@
+node_modules
+dist
+.pnpm-store
+.npm-cache
+.env
+.env.*
+.DS_Store

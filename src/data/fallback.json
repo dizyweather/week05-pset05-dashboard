@@ -1,0 +1,8 @@
+{
+  "note": "Bundled sample data. The dashboard shows this only when you ask for it, after a live request has failed — so you can keep building when the network is not cooperating. It is always labelled on screen as sample data.",
+  "weather": {
+    "temperatureF": 54,
+    "weatherCode": 3,
+    "observedAt": "2026-09-14T15:00"
+  }
+}
