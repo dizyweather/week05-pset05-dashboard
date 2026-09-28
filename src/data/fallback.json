@@ -3,6 +3,11 @@
   "weather": {
     "temperatureF": 54,
     "weatherCode": 3,
+    "feelsLikeF": 49,
+    "windMph": 8,
+    "highF": 61,
+    "lowF": 43,
+    "peakPrecipChance": 35,
     "observedAt": "2026-09-14T15:00"
   }
 }

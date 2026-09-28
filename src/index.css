@@ -80,6 +80,170 @@ select {
   flex-direction: column;
 }
 
+.weather-card {
+  background: #fbf8f0;
+}
+
+.weather-heading {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 0.75rem;
+}
+
+.weather-refresh-button {
+  flex: none;
+  padding: 0.4rem 0.6rem;
+  font-size: 0.75rem;
+}
+
+.weather-refresh-button:disabled {
+  cursor: wait;
+  opacity: 0.65;
+}
+
+.weather-loading {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  justify-content: center;
+  gap: 1rem;
+  min-height: 18rem;
+  padding: 1.5rem 0;
+}
+
+.weather-loading-art {
+  width: 7rem;
+  height: 7rem;
+  border: 2px solid var(--line);
+  border-radius: 50%;
+  background: radial-gradient(circle at 40% 40%, #e9d4a2 0 28%, #f4e8ce 29% 55%, transparent 56%);
+  animation: weather-breathe 1.5s ease-in-out infinite alternate;
+}
+
+@keyframes weather-breathe {
+  to { opacity: 0.45; transform: scale(0.96); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .weather-loading-art { animation: none; }
+}
+
+.weather-hero {
+  display: grid;
+  grid-template-columns: 6.5rem minmax(0, 1fr);
+  align-items: center;
+  gap: 0.8rem;
+  margin-top: 1.2rem;
+}
+
+.weather-art {
+  display: grid;
+  width: 6.5rem;
+  height: 6.5rem;
+  place-items: center;
+  border: 1px solid #d8cfb8;
+  border-radius: 50%;
+  background: #f5ecd8;
+}
+
+.weather-glyph {
+  width: 5.6rem;
+  height: 5.6rem;
+  fill: none;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.weather-glyph-sun {
+  stroke: #b17c39;
+  stroke-width: 3;
+}
+
+.weather-glyph-cloud {
+  fill: #f5ecd8;
+  stroke: var(--sage-dark);
+  stroke-width: 3;
+}
+
+.weather-glyph-detail {
+  stroke: var(--sage-dark);
+  stroke-width: 3;
+}
+
+.weather-value {
+  white-space: nowrap;
+}
+
+.weather-value span {
+  margin-left: 0.1rem;
+  font-family: "Segoe UI", system-ui, sans-serif;
+  font-size: 0.35em;
+  font-weight: 600;
+  vertical-align: top;
+}
+
+.weather-condition {
+  font-size: 0.98rem;
+  font-weight: 600;
+}
+
+.weather-observed {
+  margin-top: 0.25rem;
+  font-size: 0.73rem;
+  line-height: 1.4;
+}
+
+.weather-advice {
+  margin-top: 1.3rem;
+  padding: 0.8rem 0.95rem;
+  border-left: 3px solid var(--sage);
+  background: var(--sage-wash);
+}
+
+.weather-advice p:last-child {
+  margin-top: 0.3rem;
+  font-family: Georgia, "Times New Roman", serif;
+  font-size: 1.08rem;
+  line-height: 1.35;
+}
+
+.weather-report-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  margin-top: 1.25rem;
+  border-top: 1px solid var(--line);
+  border-left: 1px solid var(--line);
+}
+
+.weather-report-grid div {
+  min-width: 0;
+  padding: 0.7rem 0.75rem;
+  border-right: 1px solid var(--line);
+  border-bottom: 1px solid var(--line);
+}
+
+.weather-report-grid dt {
+  color: var(--muted-ink);
+  font-size: 0.69rem;
+  font-weight: 700;
+  letter-spacing: 0.09em;
+  text-transform: uppercase;
+}
+
+.weather-report-grid dd {
+  margin-top: 0.2rem;
+  font-family: Georgia, "Times New Roman", serif;
+  font-size: 1.17rem;
+  line-height: 1.2;
+}
+
+.weather-refresh-error {
+  margin-top: 0.8rem;
+  color: var(--terracotta-dark);
+  font-size: 0.8rem;
+}
+
 .last-updated {
   color: var(--muted-ink);
   font-size: 0.75rem;
@@ -372,5 +536,19 @@ select {
   .newspaper-navigation .secondary-button {
     padding: 0.45rem 0.55rem;
     font-size: 0.75rem;
+  }
+
+  .weather-hero {
+    grid-template-columns: 5.5rem minmax(0, 1fr);
+  }
+
+  .weather-art {
+    width: 5.5rem;
+    height: 5.5rem;
+  }
+
+  .weather-glyph {
+    width: 4.8rem;
+    height: 4.8rem;
   }
 }

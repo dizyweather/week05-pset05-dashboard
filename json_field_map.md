@@ -17,9 +17,14 @@ Examples below come from the Open-Meteo response opened on September 27, 2026.
 
 | Endpoint | JSON path | Example value (from a real response) | UI element that shows it | Fallback when missing |
 |---|---|---|---|---|
-| Open-Meteo `/v1/forecast` | `current.temperature_2m` | `83.5` | Large temperature | Show `--°F` |
-| Open-Meteo `/v1/forecast` | `current.weather_code` | `3` | Condition under temperature | Show “Condition unavailable” |
-| Open-Meteo `/v1/forecast` | `current.time` | `"2026-09-27T21:15"` | Observed time, converted from GMT to the viewer’s time zone | Show “Observation time unavailable” |
+| Open-Meteo `/v1/forecast` | `current.temperature_2m` | `67.6` | Large temperature; backup for coat suggestion if apparent temperature is missing | Show `—`; use no temperature-based coat suggestion if both temperatures are missing |
+| Open-Meteo `/v1/forecast` | `current.weather_code` | `3` | Condition label and weather illustration | Show “Condition unavailable” and a plain cloud illustration |
+| Open-Meteo `/v1/forecast` | `current.apparent_temperature` | `61.4` | “Feels like” value and coat suggestion | Show `—`; use air temperature for the suggestion |
+| Open-Meteo `/v1/forecast` | `current.wind_speed_10m` | `10.6` | “Wind now” value and coat suggestion | Show `—`; do not use wind in the suggestion |
+| Open-Meteo `/v1/forecast` | `current.time` | `"2026-09-27T20:15"` | “Conditions as of” line in Boulder time | Show “Weather time unavailable” |
+| Open-Meteo `/v1/forecast` | `daily.temperature_2m_max[0]` | `84.4` | Today’s high | Show `—` |
+| Open-Meteo `/v1/forecast` | `daily.temperature_2m_min[0]` | `59.5` | Today’s low | Show `—` |
+| Open-Meteo `/v1/forecast` | `daily.precipitation_probability_max[0]` | `34` | Peak precipitation chance and precipitation note | Show `—`; omit the precipitation note |
 
 ## Earthquake card
 

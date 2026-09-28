@@ -30,10 +30,10 @@ One entry per AI interaction that shaped your work (every plan-only → go-ahead
 
 ## Entries
 
-### Entry 1 — <title> — <date/time>
+### Entry 1 — Complete the Boulder weather report — 2026-09-27
 
-- **Intent:**
-- **AI/model/tool used:**
-- **Output or changed files:**
-- **Verification performed:**
-- **Iteration or remaining issue:**
+- **Intent:** Turn the starter weather card into a useful morning report with a coat suggestion, current and daily details, and manual refresh.
+- **AI/model/tool used:** Codex in the desktop app — plan, then implementation. The Open-Meteo documentation and a live JSON response were checked before mapping fields.
+- **Output or changed files:** `src/WeatherCard.tsx`, `src/App.tsx`, `src/index.css`, `src/data/fallback.json`, `json_field_map.md`, and weather screenshots in `screenshots/`.
+- **Verification performed:** Saw live Boulder values and the weather card beside On This Day at desktop width and stacked at mobile width. Manual refresh returned a new update time; a failed refresh kept the previous report visible with an error notice. Captured loading with a temporary response delay and the initial error state by temporarily misspelling the endpoint; restored the normal endpoint afterward. The Vite build and TypeScript check passed using the bundled Node runtime.
+- **Iteration or remaining issue:** Changed “rain chance” to “precipitation chance” to match what the API reports. No known issue remains with this card.
