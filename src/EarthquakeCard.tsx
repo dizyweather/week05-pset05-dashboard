@@ -7,6 +7,7 @@ const EARTHQUAKES_URL =
   "https://earthquake.usgs.gov/earthquakes/feed/v1.0/summary/all_day.geojson";
 const GLOBE_SIZE = 420;
 const GLOBE_RADIUS = 190;
+const ROTATION_DURATION_MS = 650;
 
 type Status = "loading" | "loaded" | "error";
 
@@ -52,7 +53,6 @@ function CrackedGlobe() {
       <g clipPath="url(#cracked-globe-clip)">
         <path className="globe-crack-edge" d={crack} />
         <path className="globe-crack-gap" d={crack} />
-        <path className="globe-crack-branch" d="M 190 155 L 161 142 L 145 116 M 187 239 L 154 254 L 137 285 M 219 279 L 247 265 L 270 239" />
       </g>
     </svg>
   );
@@ -138,6 +138,21 @@ export function EarthquakeCard() {
   const [rotation, setRotation] = useState<[number, number]>([0, 0]);
   const [attempt, setAttempt] = useState(0);
   const drag = useRef<DragStart | null>(null);
+  const rotationRef = useRef<[number, number]>([0, 0]);
+  const animationFrame = useRef<number | null>(null);
+
+  const setGlobeRotation = useCallback((next: [number, number]) => {
+    rotationRef.current = next;
+    setRotation(next);
+  }, []);
+  const stopRotation = useCallback(() => {
+    if (animationFrame.current !== null) {
+      cancelAnimationFrame(animationFrame.current);
+      animationFrame.current = null;
+    }
+  }, []);
+
+  useEffect(() => stopRotation, [stopRotation]);
 
   useEffect(() => {
     const controller = new AbortController();
@@ -158,7 +173,7 @@ export function EarthquakeCard() {
           const largest = events.reduce((best, event) =>
             (event.magnitude ?? -Infinity) > (best.magnitude ?? -Infinity) ? event : best
           );
-          setRotation([-largest.longitude, -largest.latitude]);
+          setGlobeRotation([-largest.longitude, -largest.latitude]);
           setSelectedId(largest.id);
         }
         setStatus("loaded");
@@ -170,7 +185,7 @@ export function EarthquakeCard() {
       });
 
     return () => controller.abort();
-  }, [attempt]);
+  }, [attempt, setGlobeRotation]);
 
   const projection = useMemo(() => geoOrthographic()
     .scale(GLOBE_RADIUS)
@@ -190,16 +205,41 @@ export function EarthquakeCard() {
   const retry = useCallback(() => setAttempt((previous) => previous + 1), []);
   const selectEvent = useCallback((event: Earthquake) => {
     setSelectedId(event.id);
-    setRotation([-event.longitude, -event.latitude]);
-  }, []);
+    stopRotation();
+    const start = rotationRef.current;
+    const target: [number, number] = [-event.longitude, -event.latitude];
+    const longitudeDelta = ((target[0] - start[0]) % 360 + 540) % 360 - 180;
+    const latitudeDelta = target[1] - start[1];
+
+    if (window.matchMedia("(prefers-reduced-motion: reduce)").matches ||
+      (Math.abs(longitudeDelta) < 0.01 && Math.abs(latitudeDelta) < 0.01)) {
+      setGlobeRotation([start[0] + longitudeDelta, target[1]]);
+      return;
+    }
+
+    const startedAt = performance.now();
+    const animate = (now: number) => {
+      const progress = Math.min(1, (now - startedAt) / ROTATION_DURATION_MS);
+      const eased = progress < 0.5
+        ? 4 * progress ** 3
+        : 1 - (-2 * progress + 2) ** 3 / 2;
+      setGlobeRotation([
+        start[0] + longitudeDelta * eased,
+        start[1] + latitudeDelta * eased,
+      ]);
+      animationFrame.current = progress < 1 ? requestAnimationFrame(animate) : null;
+    };
+    animationFrame.current = requestAnimationFrame(animate);
+  }, [setGlobeRotation, stopRotation]);
 
   const onPointerDown = (event: React.PointerEvent<SVGSVGElement>) => {
     if (event.button !== 0 || (event.target as Element).closest("[data-earthquake-marker]")) return;
+    stopRotation();
     drag.current = {
       pointerId: event.pointerId,
       x: event.clientX,
       y: event.clientY,
-      rotation,
+      rotation: rotationRef.current,
     };
     event.currentTarget.setPointerCapture(event.pointerId);
   };
@@ -210,7 +250,7 @@ export function EarthquakeCard() {
     const latitude = Math.max(-85, Math.min(85,
       start.rotation[1] - (event.clientY - start.y) * 0.35,
     ));
-    setRotation([longitude, latitude]);
+    setGlobeRotation([longitude, latitude]);
   };
   const onPointerEnd = (event: React.PointerEvent<SVGSVGElement>) => {
     if (drag.current?.pointerId === event.pointerId) drag.current = null;
@@ -220,7 +260,7 @@ export function EarthquakeCard() {
   };
 
   return (
-    <section className="dashboard-card sm:col-span-2" aria-labelledby="earthquake-title">
+    <section className="dashboard-card earthquake-card sm:col-span-2" aria-labelledby="earthquake-title">
       <div className="flex flex-wrap items-end justify-between gap-2">
         <div>
           <p className="eyebrow">Global activity</p>

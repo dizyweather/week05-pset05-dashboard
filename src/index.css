@@ -73,6 +73,14 @@ select {
   padding: 1.5rem;
 }
 
+.earthquake-card {
+  --line: #d6c6ad;
+  --sage-wash: #f0e5d3;
+  --globe-cream: #e6d6ba;
+  --terracotta: #a82f2c;
+  background: #fbf6ec;
+}
+
 .weather-value {
   font-size: clamp(3rem, 6vw, 3.8rem);
   line-height: 1.05;
@@ -100,8 +108,8 @@ select {
   display: flex;
   align-items: center;
   gap: 1.5rem;
-  border-color: #d7c4ac;
-  background: #f3e9da;
+  border-color: var(--line);
+  background: var(--sage-wash);
 }
 
 .quake-error-title {
@@ -117,8 +125,7 @@ select {
 }
 
 .globe-crack-edge,
-.globe-crack-gap,
-.globe-crack-branch {
+.globe-crack-gap {
   fill: none;
   stroke-linecap: round;
   stroke-linejoin: round;
@@ -132,11 +139,6 @@ select {
 .globe-crack-gap {
   stroke: var(--card);
   stroke-width: 6px;
-}
-
-.globe-crack-branch {
-  stroke: var(--globe-crack);
-  stroke-width: 5px;
 }
 
 .action-button,
