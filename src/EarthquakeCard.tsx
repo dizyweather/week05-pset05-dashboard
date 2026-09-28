@@ -2,6 +2,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { geoDistance, geoOrthographic, geoPath } from "d3-geo";
 import { feature } from "topojson-client";
 import landTopology from "world-atlas/land-110m.json";
+import { LastUpdated } from "./LastUpdated";
 
 const EARTHQUAKES_URL =
   "https://earthquake.usgs.gov/earthquakes/feed/v1.0/summary/all_day.geojson";
@@ -137,9 +138,14 @@ export function EarthquakeCard() {
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [rotation, setRotation] = useState<[number, number]>([0, 0]);
   const [attempt, setAttempt] = useState(0);
+  const [isRefreshing, setIsRefreshing] = useState(false);
+  const [refreshError, setRefreshError] = useState(false);
+  const [lastUpdated, setLastUpdated] = useState<number | null>(null);
   const drag = useRef<DragStart | null>(null);
   const rotationRef = useRef<[number, number]>([0, 0]);
   const animationFrame = useRef<number | null>(null);
+  const selectedIdRef = useRef<string | null>(null);
+  const hasLoadedRef = useRef(false);
 
   const setGlobeRotation = useCallback((next: [number, number]) => {
     rotationRef.current = next;
@@ -153,39 +159,6 @@ export function EarthquakeCard() {
   }, []);
 
   useEffect(() => stopRotation, [stopRotation]);
-
-  useEffect(() => {
-    const controller = new AbortController();
-    setStatus("loading");
-    setEarthquakes([]);
-    setSelectedId(null);
-
-    fetch(EARTHQUAKES_URL, { signal: controller.signal })
-      .then((response) => {
-        if (!response.ok) throw new Error(`USGS request failed: ${response.status}`);
-        return response.json();
-      })
-      .then((json: unknown) => {
-        if (controller.signal.aborted) return;
-        const events = parseEarthquakes(json);
-        setEarthquakes(events);
-        if (events.length > 0) {
-          const largest = events.reduce((best, event) =>
-            (event.magnitude ?? -Infinity) > (best.magnitude ?? -Infinity) ? event : best
-          );
-          setGlobeRotation([-largest.longitude, -largest.latitude]);
-          setSelectedId(largest.id);
-        }
-        setStatus("loaded");
-      })
-      .catch((error: unknown) => {
-        if (controller.signal.aborted) return;
-        console.error(error);
-        setStatus("error");
-      });
-
-    return () => controller.abort();
-  }, [attempt, setGlobeRotation]);
 
   const projection = useMemo(() => geoOrthographic()
     .scale(GLOBE_RADIUS)
@@ -204,6 +177,7 @@ export function EarthquakeCard() {
 
   const retry = useCallback(() => setAttempt((previous) => previous + 1), []);
   const selectEvent = useCallback((event: Earthquake) => {
+    selectedIdRef.current = event.id;
     setSelectedId(event.id);
     stopRotation();
     const start = rotationRef.current;
@@ -231,6 +205,60 @@ export function EarthquakeCard() {
     };
     animationFrame.current = requestAnimationFrame(animate);
   }, [setGlobeRotation, stopRotation]);
+
+  useEffect(() => {
+    const controller = new AbortController();
+    const isRefresh = hasLoadedRef.current;
+    setRefreshError(false);
+    if (isRefresh) {
+      setIsRefreshing(true);
+    } else {
+      setStatus("loading");
+      setEarthquakes([]);
+      selectedIdRef.current = null;
+      setSelectedId(null);
+    }
+
+    fetch(EARTHQUAKES_URL, { signal: controller.signal, cache: "no-store" })
+      .then((response) => {
+        if (!response.ok) throw new Error(`USGS request failed: ${response.status}`);
+        return response.json();
+      })
+      .then((json: unknown) => {
+        if (controller.signal.aborted) return;
+        const events = parseEarthquakes(json);
+        const retained = events.find((event) => event.id === selectedIdRef.current);
+        setEarthquakes(events);
+        if (!retained && events.length > 0) {
+          const largest = events.reduce((best, event) =>
+            (event.magnitude ?? -Infinity) > (best.magnitude ?? -Infinity) ? event : best
+          );
+          if (isRefresh) selectEvent(largest);
+          else {
+            selectedIdRef.current = largest.id;
+            setSelectedId(largest.id);
+            setGlobeRotation([-largest.longitude, -largest.latitude]);
+          }
+        } else if (events.length === 0) {
+          stopRotation();
+          selectedIdRef.current = null;
+          setSelectedId(null);
+        }
+        hasLoadedRef.current = true;
+        setLastUpdated(Date.now());
+        setStatus("loaded");
+        setIsRefreshing(false);
+      })
+      .catch((error: unknown) => {
+        if (controller.signal.aborted) return;
+        console.error(error);
+        if (isRefresh) setRefreshError(true);
+        else setStatus("error");
+        setIsRefreshing(false);
+      });
+
+    return () => controller.abort();
+  }, [attempt, selectEvent, setGlobeRotation, stopRotation]);
 
   const onPointerDown = (event: React.PointerEvent<SVGSVGElement>) => {
     if (event.button !== 0 || (event.target as Element).closest("[data-earthquake-marker]")) return;
@@ -260,14 +288,29 @@ export function EarthquakeCard() {
   };
 
   return (
-    <section className="dashboard-card earthquake-card sm:col-span-2" aria-labelledby="earthquake-title">
-      <div className="flex flex-wrap items-end justify-between gap-2">
+    <section className="dashboard-card earthquake-card md:col-span-2" aria-labelledby="earthquake-title">
+      <div className="flex flex-wrap items-start justify-between gap-2">
         <div>
           <p className="eyebrow">Global activity</p>
           <h2 id="earthquake-title" className="card-title mt-2">Where are earthquakes happening?</h2>
         </div>
-        <span className="supporting-text text-sm">Past 24 hours · USGS</span>
+        <div className="quake-header-meta">
+          <span className="supporting-text text-sm">Past 24 hours · USGS</span>
+          {status === "loaded" && (
+            <button type="button" className="secondary-button quake-refresh-button"
+              onClick={retry} disabled={isRefreshing}>
+              {isRefreshing ? "Refreshing…" : "Refresh earthquakes"}
+            </button>
+          )}
+          <LastUpdated at={lastUpdated} />
+        </div>
       </div>
+
+      {refreshError && (
+        <p className="quake-refresh-error mt-3" role="alert">
+          Couldn&apos;t refresh earthquakes. Showing the last successful data.
+        </p>
+      )}
 
       {status === "loading" && (
         <p className="supporting-text mt-4" role="status">Loading earthquakes…</p>

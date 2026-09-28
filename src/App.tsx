@@ -1,6 +1,8 @@
 import { useCallback, useEffect, useState } from "react";
 import fallback from "./data/fallback.json";
 import { EarthquakeCard } from "./EarthquakeCard";
+import { LastUpdated } from "./LastUpdated";
+import { OnThisDayCard } from "./OnThisDayCard";
 
 /**
  * One card, wired end to end, so you can see the shape before you build your
@@ -50,6 +52,17 @@ function toWeatherNow(json: unknown): WeatherNow {
   };
 }
 
+function formatObservedAt(value: string): string {
+  if (!value) return "Observation time unavailable";
+  // This request does not set a timezone, so Open-Meteo returns its time in GMT.
+  const observed = new Date(`${value}Z`);
+  if (Number.isNaN(observed.getTime())) return "Observation time unavailable";
+  return `Observed ${new Intl.DateTimeFormat(undefined, {
+    month: "short", day: "numeric", hour: "numeric", minute: "2-digit",
+    timeZoneName: "short",
+  }).format(observed)}`;
+}
+
 /** A few of Open-Meteo's WMO weather codes. Anything unlisted shows the code. */
 const WEATHER_LABELS: Record<number, string> = {
   0: "Clear",
@@ -79,6 +92,7 @@ function WeatherCard() {
   const [status, setStatus] = useState<Status>("loading");
   const [source, setSource] = useState<Source>("live");
   const [weather, setWeather] = useState<WeatherNow | null>(null);
+  const [lastUpdated, setLastUpdated] = useState<number | null>(null);
   const [attempt, setAttempt] = useState(0);
 
   useEffect(() => {
@@ -96,6 +110,7 @@ function WeatherCard() {
       })
       .then((json) => {
         setWeather(toWeatherNow(json));
+        setLastUpdated(Date.now());
         setStatus("loaded");
       })
       .catch((err: unknown) => {
@@ -115,12 +130,13 @@ function WeatherCard() {
   /** The offline escape hatch: bundled data, shown only when asked for. */
   const useSample = useCallback(() => {
     setWeather(fallback.weather);
+    setLastUpdated(null);
     setSource("sample");
     setStatus("loaded");
   }, []);
 
   return (
-    <section className="dashboard-card" aria-labelledby="weather-title">
+    <section className="dashboard-card weather-card" aria-labelledby="weather-title">
       <p className="eyebrow">Local weather · Boulder, Colorado</p>
       <h2 id="weather-title" className="card-title mt-2">Do I need a coat?</h2>
 
@@ -146,7 +162,7 @@ function WeatherCard() {
               : WEATHER_LABELS[weather.weatherCode] ?? `Weather code ${weather.weatherCode}`}
           </p>
           <p className="supporting-text mt-2 text-sm">
-            {weather.observedAt ? `Observed ${weather.observedAt}` : "Observation time unavailable"}
+            {formatObservedAt(weather.observedAt)}
           </p>
         </div>
       )}
@@ -172,6 +188,7 @@ function WeatherCard() {
           </div>
         </div>
       )}
+      {status === "loaded" && source === "live" && <LastUpdated at={lastUpdated} className="mt-auto pt-3" />}
     </section>
   );
 }
@@ -183,12 +200,13 @@ export function App() {
         <p className="eyebrow mb-2">A daily briefing</p>
         <h1 className="page-title">Morning Field Notes</h1>
         <p className="supporting-text mt-2">
-          Your weather in Boulder and earthquakes around the world.
+          Your weather in Boulder, earthquakes around the world, and moments from history.
         </p>
       </header>
 
-      <div className="grid gap-6 sm:grid-cols-2">
+      <div className="grid gap-6 md:grid-cols-2">
         <WeatherCard />
+        <OnThisDayCard />
         <EarthquakeCard />
       </div>
     </main>
