@@ -30,10 +30,26 @@ One entry per AI interaction that shaped your work (every plan-only → go-ahead
 
 ## Entries
 
-### Entry 1 — Complete the Boulder weather report — 2026-09-27
+### Entry 1 — Earthquake globe — 2026-09-27
 
-- **Intent:** Turn the starter weather card into a useful morning report with a coat suggestion, current and daily details, and manual refresh.
-- **AI/model/tool used:** Codex in the desktop app — plan, then implementation. The Open-Meteo documentation and a live JSON response were checked before mapping fields.
-- **Output or changed files:** `src/WeatherCard.tsx`, `src/App.tsx`, `src/index.css`, `src/data/fallback.json`, `json_field_map.md`, and weather screenshots in `screenshots/`.
-- **Verification performed:** Saw live Boulder values and the weather card beside On This Day at desktop width and stacked at mobile width. Manual refresh returned a new update time; a failed refresh kept the previous report visible with an error notice. Captured loading with a temporary response delay and the initial error state by temporarily misspelling the endpoint; restored the normal endpoint afterward. The Vite build and TypeScript check passed using the bundled Node runtime.
-- **Iteration or remaining issue:** Changed “rain chance” to “precipitation chance” to match what the API reports. No known issue remains with this card.
+- **Intent:** Show recent earthquakes in an interactive globe card.
+- **AI/model/tool used:** Codex in the desktop app.
+- **Output or changed files:** Asked to make a card of today's earthquake as a rotatable globe. `src/EarthquakeCard.tsx`, globe styling, and USGS rows in `json_field_map.md`. 
+- **Verification performed:** Captured loaded, loading, and error screenshots in `screenshots/`.
+- **Iteration or remaining issue:** Refined the Field Notes colors, cracked-globe error art, and eased rotation to selected points. No remaining issues.
+
+### Entry 2 — On This Day newspaper card — 2026-09-27
+
+- **Intent:** Add historical events in a newspaper-style card.
+- **AI/model/tool used:** Codex in the desktop app.
+- **Output or changed files:** Asked to make a card to show events that happened on this day in the past. `src/OnThisDayCard.tsx`, newspaper styling, and Wikimedia rows in `json_field_map.md`.
+- **Verification performed:** Captured loading and error screenshots; checked the card in the dashboard layout.
+- **Iteration or remaining issue:** Added carousel controls and the historical event source link. Asked gpt on formating options and it generated previews which was cool. No remaining issues.
+
+### Entry 3 — Complete the Boulder weather report — 2026-09-27
+
+- **Intent:** Make the weather card useful for deciding what to wear.
+- **AI/model/tool used:** Codex in the desktop app.
+- **Output or changed files:** Asked to help finish the weather card. `src/WeatherCard.tsx`, weather styling, sample data, field map, and screenshots. Changed from initial idea since artwork purchases need api keys.
+- **Verification performed:** Checked live data, refresh, failed refresh, mobile and desktop layout, loading and error views; build and type check passed.
+- **Iteration or remaining issue:** Renamed rain chance to precipitation chance to match the API. No remaining issues.
