@@ -97,6 +97,17 @@ function coatAdvice(report: WeatherReport): string {
   return advice;
 }
 
+function sameWeather(first: WeatherReport, second: WeatherReport): boolean {
+  return first.temperatureF === second.temperatureF &&
+    first.weatherCode === second.weatherCode &&
+    first.feelsLikeF === second.feelsLikeF &&
+    first.windMph === second.windMph &&
+    first.highF === second.highF &&
+    first.lowF === second.lowF &&
+    first.peakPrecipChance === second.peakPrecipChance &&
+    first.observedAt === second.observedAt;
+}
+
 function WeatherGlyph({ code }: { code: number | null }) {
   const storm = code === 95 || code === 96 || code === 99;
   const snow = code !== null && [71, 73, 75, 77, 85, 86].includes(code);
@@ -133,23 +144,29 @@ export function WeatherCard() {
   const [weather, setWeather] = useState<WeatherReport | null>(null);
   const [lastUpdated, setLastUpdated] = useState<number | null>(null);
   const [refreshError, setRefreshError] = useState(false);
+  const [refreshResult, setRefreshResult] = useState<"unchanged" | "updated" | null>(null);
   const [isRefreshing, setIsRefreshing] = useState(false);
   const [attempt, setAttempt] = useState(0);
 
   useEffect(() => {
     const controller = new AbortController();
     setRefreshError(false);
+    setRefreshResult(null);
     if (weather) setIsRefreshing(true);
     else setStatus("loading");
 
-    fetch(WEATHER_URL, { signal: controller.signal })
+    fetch(WEATHER_URL, { signal: controller.signal, cache: "no-store" })
       .then((response) => {
         if (!response.ok) throw new Error(`Weather request failed: ${response.status}`);
         return response.json();
       })
       .then((json: unknown) => {
         if (controller.signal.aborted) return;
-        setWeather(toWeatherReport(json));
+        const nextWeather = toWeatherReport(json);
+        if (weather) {
+          setRefreshResult(source === "live" && sameWeather(weather, nextWeather) ? "unchanged" : "updated");
+        }
+        setWeather(nextWeather);
         setLastUpdated(Date.now());
         setSource("live");
         setStatus("loaded");
@@ -232,7 +249,16 @@ export function WeatherCard() {
               Couldn’t update the weather. Showing the previous report.
             </p>
           )}
-          {source === "live" && <LastUpdated at={lastUpdated} className="mt-auto pt-4" />}
+          {refreshResult && (
+            <p className="weather-refresh-note" role="status">
+              {refreshResult === "unchanged"
+                ? "Checked again. The forecast values are unchanged."
+                : "Latest weather report loaded."}
+            </p>
+          )}
+          {source === "live" && (
+            <LastUpdated at={lastUpdated} label="Last checked" showSeconds className="mt-auto pt-4" />
+          )}
         </>
       )}
 

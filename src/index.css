@@ -244,6 +244,12 @@ select {
   font-size: 0.8rem;
 }
 
+.weather-refresh-note {
+  margin-top: 0.8rem;
+  color: var(--sage-dark);
+  font-size: 0.8rem;
+}
+
 .last-updated {
   color: var(--muted-ink);
   font-size: 0.75rem;

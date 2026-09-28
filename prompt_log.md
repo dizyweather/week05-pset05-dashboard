@@ -53,3 +53,11 @@ One entry per AI interaction that shaped your work (every plan-only → go-ahead
 - **Output or changed files:** Asked to help finish the weather card. `src/WeatherCard.tsx`, weather styling, sample data, field map, and screenshots. Changed from initial idea since artwork purchases need api keys.
 - **Verification performed:** Checked live data, refresh, failed refresh, mobile and desktop layout, loading and error views; build and type check passed.
 - **Iteration or remaining issue:** Renamed rain chance to precipitation chance to match the API. No remaining issues.
+
+### Entry 4 — Clarify weather refresh — 2026-09-27
+
+- **Intent:** Check why Refresh appeared inactive.
+- **AI/model/tool used:** Codex in the desktop app.
+- **Output or changed files:** Updated weather refresh feedback, check time, and the field map.
+- **Verification performed:** The button sent a request that received HTTP 200. A repeated check showed that the forecast values were unchanged; build and type check passed.
+- **Iteration or remaining issue:** The card now says when a check succeeds without new values.
